@@ -1,74 +1,84 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from "react";
+import { View, FlatList, ActivityIndicator } from "react-native";
+import { styles } from "@/styles/feed.styles";
+import Post from "@/components/Post";
+import StoryList from "@/components/StoryList";
+import { COLORS } from "@/constants/theme";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function Feed() {
+  const [posts, setPosts] = useState([
+    {
+      id: "1",
+      user: "abhisek",
+      avatar: "https://randomuser.me/api/portraits/men/1.jpg",
+      image:
+        "https://images.unsplash.com/photo-1735193862982-40628b025ee8?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      likes: 125,
+      caption: "Enjoying the view!",
+      comments: 10,
+    },
+    {
+      id: "2",
+      user: "malla",
+      avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+      image:
+        "https://images.unsplash.com/photo-1741484730838-d8cc2e4a9bf4?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      likes: 342,
+      caption: "#SunsetMagic",
+      comments: 28,
+    },
+  ]);
 
-export default function HomeScreen() {
+  const [loading, setLoading] = useState(false);
+
+  const loadMorePosts = () => {
+    if (loading) return;
+
+    setLoading(true);
+
+    setTimeout(() => {
+      const newPosts = [
+        {
+          id: Math.random().toString(),
+          user: "new_user",
+          avatar: "https://randomuser.me/api/portraits/women/2.jpg",
+          image:
+            "https://images.unsplash.com/photo-1741484730838-d8cc2e4a9bf4?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          likes: 200,
+          caption: "New post added!",
+          comments: 15,
+        },
+      ];
+      setPosts([...posts, ...newPosts]);
+      setLoading(false);
+    }, 2000); // Simulating API delay
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <StoryList />
+      <FlatList
+        data={posts}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <Post post={item} />}
+        showsVerticalScrollIndicator={false}
+        onEndReached={loadMorePosts}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loading ? (
+            <ActivityIndicator size="large" color={COLORS.primary} />
+          ) : null
+        }
+        initialNumToRender={5}
+        windowSize={10}
+        getItemLayout={(data, index) => ({
+          length: 600,
+          offset: 600 * index,
+          index,
+        })}
+        removeClippedSubviews={true}
+        legacyImplementation={false}
+      />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
